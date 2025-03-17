@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.21.x]
+        go-version: [1.23]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -17,4 +17,11 @@ jobs:
     - name: Check that WASM builds
       run: GOOS=js GOARCH=wasm go build -o test.wasm .
     - name: Test
-      run: go test ./...
+      run: go test -v -coverprofile=coverage.out ./...
+    - name: Upload coverage report 
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+      with:
+        path: coverage.out
+        name: coverage-report
+    - name: Display coverage report
+      run: go tool cover -func=coverage.out
