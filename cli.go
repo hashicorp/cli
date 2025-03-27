@@ -6,7 +6,6 @@ package cli
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -29,26 +28,25 @@ import (
 // If you use a CLI with nested subcommands, some semantics change due to
 // ambiguities:
 //
-//   * We use longest prefix matching to find a matching subcommand. This
+//   - We use longest prefix matching to find a matching subcommand. This
 //     means if you register "foo bar" and the user executes "cli foo qux",
 //     the "foo" command will be executed with the arg "qux". It is up to
 //     you to handle these args. One option is to just return the special
 //     help return code `RunResultHelp` to display help and exit.
 //
-//   * The help flag "-h" or "-help" will look at all args to determine
+//   - The help flag "-h" or "-help" will look at all args to determine
 //     the help function. For example: "otto apps list -h" will show the
 //     help for "apps list" but "otto apps -h" will show it for "apps".
 //     In the normal CLI, only the first subcommand is used.
 //
-//   * The help flag will list any subcommands that a command takes
+//   - The help flag will list any subcommands that a command takes
 //     as well as the command's help itself. If there are no subcommands,
 //     it will note this. If the CLI itself has no subcommands, this entire
 //     section is omitted.
 //
-//   * Any parent commands that don't exist are automatically created as
+//   - Any parent commands that don't exist are automatically created as
 //     no-op commands that just show help for other subcommands. For example,
 //     if you only register "foo bar", then "foo" is automatically created.
-//
 type CLI struct {
 	// Args is the list of command-line arguments received excluding
 	// the name of the app. For example, if the command "./cli foo bar"
@@ -190,13 +188,17 @@ func (c *CLI) Run() (int, error) {
 
 	// Just show the version and exit if instructed.
 	if c.IsVersion() && c.Version != "" {
-		c.HelpWriter.Write([]byte(c.Version + "\n"))
+		if _, err := c.HelpWriter.Write([]byte(c.Version + "\n")); err != nil {
+			return 1, err
+		}
 		return 0, nil
 	}
 
 	// Just print the help when only '-h' or '--help' is passed.
 	if c.IsHelp() && c.Subcommand() == "" {
-		c.HelpWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.Subcommand())) + "\n"))
+		if _, err := c.HelpWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.Subcommand())) + "\n")); err != nil {
+			return 1, err
+		}
 		return 0, nil
 	}
 
@@ -238,7 +240,9 @@ func (c *CLI) Run() (int, error) {
 	// implementation. If the command is invalid or blank, it is an error.
 	raw, ok := c.commandTree.Get(c.Subcommand())
 	if !ok {
-		c.ErrorWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.subcommandParent())) + "\n"))
+		if _, err := c.ErrorWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.subcommandParent())) + "\n")); err != nil {
+			return 1, err
+		}
 		return 127, nil
 	}
 
@@ -255,10 +259,13 @@ func (c *CLI) Run() (int, error) {
 
 	// If there is an invalid flag, then error
 	if len(c.topFlags) > 0 {
-		c.ErrorWriter.Write([]byte(
+		_, err := c.ErrorWriter.Write([]byte(
 			"Invalid flags before the subcommand. If these flags are for\n" +
 				"the subcommand, please put them after the subcommand.\n\n"))
 		c.commandHelp(c.ErrorWriter, command)
+		if err != nil {
+			return 1, err
+		}
 		return 1, nil
 	}
 
@@ -413,7 +420,7 @@ func (c *CLI) initAutocomplete() {
 	// not, then we do nothing. This saves a LOT of compute cycles since
 	// initAutoCompleteSub has to walk every command.
 	c.autocomplete = complete.New(c.Name, complete.Command{})
-	c.autocomplete.Out = ioutil.Discard
+	c.autocomplete.Out = io.Discard
 	if !c.autocomplete.Complete() {
 		return
 	}
@@ -557,12 +564,12 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 			// Get the command
 			raw, ok := subcommands[k]
 			if !ok {
-				c.ErrorWriter.Write([]byte(fmt.Sprintf(
+				_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
 					"Error getting subcommand %q", k)))
 			}
 			sub, err := raw()
 			if err != nil {
-				c.ErrorWriter.Write([]byte(fmt.Sprintf(
+				_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
 					"Error instantiating %q: %s", k, err)))
 			}
 
@@ -589,7 +596,7 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 	}
 
 	// An error, just output...
-	c.ErrorWriter.Write([]byte(fmt.Sprintf(
+	_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
 		"Internal error rendering help: %s", err)))
 }
 
