@@ -1270,7 +1270,9 @@ func TestCLIAutocomplete_root(t *testing.T) {
 			// element if we have one since we usually output a final newline
 			// which results in a blank.
 			var outBuf bytes.Buffer
-			io.Copy(&outBuf, r)
+			if _, err := io.Copy(&outBuf, r); err != nil {
+				t.Fatal(err)
+			}
 			actual := strings.Split(outBuf.String(), "\n")
 			if len(actual) > 0 {
 				actual = actual[:len(actual)-1]
@@ -1348,7 +1350,9 @@ func TestCLIAutocomplete_rootGlobalFlags(t *testing.T) {
 			// element if we have one since we usually output a final newline
 			// which results in a blank.
 			var outBuf bytes.Buffer
-			io.Copy(&outBuf, r)
+			if _, err = io.Copy(&outBuf, r); err != nil {
+				t.Fatal(err)
+			}
 			actual := strings.Split(outBuf.String(), "\n")
 			if len(actual) > 0 {
 				actual = actual[:len(actual)-1]
@@ -1428,7 +1432,9 @@ func TestCLIAutocomplete_rootDisableDefaultFlags(t *testing.T) {
 			// element if we have one since we usually output a final newline
 			// which results in a blank.
 			var outBuf bytes.Buffer
-			io.Copy(&outBuf, r)
+			if _, err = io.Copy(&outBuf, r); err != nil {
+				t.Fatal(err)
+			}
 			actual := strings.Split(outBuf.String(), "\n")
 			if len(actual) > 0 {
 				actual = actual[:len(actual)-1]

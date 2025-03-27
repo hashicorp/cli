@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"io"
 	"testing"
+	"time"
 )
 
 func TestBasicUi_implements(t *testing.T) {
@@ -35,7 +36,17 @@ func TestBasicUi_Ask(t *testing.T) {
 				Writer: writer,
 			}
 
-			go in_w.Write([]byte(tc.input))
+			errors := make(chan error, 1)
+			go func() {
+				_, err := in_w.Write([]byte(tc.input))
+				errors <- err
+			}()
+			select {
+			case err := <-errors:
+				t.Fatalf("Failed to write: %v", err)
+			case <-time.After(1 * time.Second):
+				// no errors occured
+			}
 
 			result, err := ui.Ask(tc.query)
 			if err != nil {
@@ -64,7 +75,17 @@ func TestBasicUi_AskSecret(t *testing.T) {
 		Writer: writer,
 	}
 
-	go in_w.Write([]byte("foo bar\nbaz\n"))
+	errors := make(chan error, 1)
+	go func() {
+		_, err := in_w.Write([]byte("foo bar\nbaz\n"))
+		errors <- err
+	}()
+	select {
+	case err := <-errors:
+		t.Fatalf("Failed to write: %v", err)
+	case <-time.After(1 * time.Second):
+		// no errors occured
+	}
 
 	result, err := ui.AskSecret("Name?")
 	if err != nil {
