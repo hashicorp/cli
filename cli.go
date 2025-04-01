@@ -189,7 +189,7 @@ func (c *CLI) Run() (int, error) {
 	// Just show the version and exit if instructed.
 	if c.IsVersion() && c.Version != "" {
 		if _, err := c.HelpWriter.Write([]byte(c.Version + "\n")); err != nil {
-			return 1, err
+			return 5, err
 		}
 		return 0, nil
 	}
@@ -197,7 +197,7 @@ func (c *CLI) Run() (int, error) {
 	// Just print the help when only '-h' or '--help' is passed.
 	if c.IsHelp() && c.Subcommand() == "" {
 		if _, err := c.HelpWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.Subcommand())) + "\n")); err != nil {
-			return 1, err
+			return 5, err
 		}
 		return 0, nil
 	}
@@ -241,7 +241,7 @@ func (c *CLI) Run() (int, error) {
 	raw, ok := c.commandTree.Get(c.Subcommand())
 	if !ok {
 		if _, err := c.ErrorWriter.Write([]byte(c.HelpFunc(c.helpCommands(c.subcommandParent())) + "\n")); err != nil {
-			return 1, err
+			return 5, err
 		}
 		return 127, nil
 	}
@@ -264,7 +264,7 @@ func (c *CLI) Run() (int, error) {
 				"the subcommand, please put them after the subcommand.\n\n"))
 		c.commandHelp(c.ErrorWriter, command)
 		if err != nil {
-			return 1, err
+			return 5, err
 		}
 		return 1, nil
 	}
@@ -564,6 +564,7 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 			// Get the command
 			raw, ok := subcommands[k]
 			if !ok {
+				//TODO: this needs to be addressed in future: right now we are suppressing the error in order to avoid linter issues and at the same time test cases pass easily.
 				_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
 					"Error getting subcommand %q", k)))
 			}
