@@ -18,8 +18,12 @@ func TestUiWriter(t *testing.T) {
 		Ui: ui,
 	}
 
-	w.Write([]byte("foo\n"))
-	w.Write([]byte("bar\n"))
+	if _, err := w.Write([]byte("foo\n")); err != nil {
+		t.Fatalf("failed to write the bytes: %v", err)
+	}
+	if _, err := w.Write([]byte("bar\n")); err != nil {
+		t.Fatalf("failed to write the bytes: %v", err)
+	}
 
 	if ui.OutputWriter.String() != "foo\nbar\n" {
 		t.Fatalf("bad: %s", ui.OutputWriter.String())
@@ -32,7 +36,9 @@ func TestUiWriter_empty(t *testing.T) {
 		Ui: ui,
 	}
 
-	w.Write([]byte(""))
+	if _, err := w.Write([]byte("")); err != nil {
+		t.Fatalf("failed to write the bytes: %v", err)
+	}
 
 	if ui.OutputWriter.String() != "\n" {
 		t.Fatalf("bad: %s", ui.OutputWriter.String())
