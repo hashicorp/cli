@@ -6,7 +6,6 @@ package cli
 import (
 	"io"
 	"testing"
-	"time"
 )
 
 func TestMockUi_implements(t *testing.T) {
@@ -38,16 +37,15 @@ func TestMockUi_Ask(t *testing.T) {
 				_, err := in_w.Write([]byte(tc.input))
 				errors <- err
 			}()
-			select {
-			case err := <-errors:
-				t.Fatalf("Failed to write: %v", err)
-			case <-time.After(1 * time.Second):
-				// no errors occured
-			}
 
 			result, err := ui.Ask(tc.query)
 			if err != nil {
 				t.Fatalf("err: %s", err)
+			}
+
+			err = <-errors
+			if err != nil {
+				t.Fatalf("err: %v", err)
 			}
 
 			if result != tc.expectedResult {

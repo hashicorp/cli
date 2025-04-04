@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"io"
 	"testing"
-	"time"
 )
 
 func TestBasicUi_implements(t *testing.T) {
@@ -79,16 +78,15 @@ func TestBasicUi_AskSecret(t *testing.T) {
 		_, err := in_w.Write([]byte("foo bar\nbaz\n"))
 		errors <- err
 	}()
-	select {
-	case err := <-errors:
-		t.Fatalf("Failed to write: %v", err)
-	case <-time.After(1 * time.Second):
-		// no errors occured
-	}
 
 	result, err := ui.AskSecret("Name?")
 	if err != nil {
 		t.Fatalf("err: %s", err)
+	}
+
+	err = <-errors
+	if err != nil {
+		t.Fatalf("err: %v", err)
 	}
 
 	if writer.String() != "Name? " {
