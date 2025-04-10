@@ -32,11 +32,20 @@ func TestMockUi_Ask(t *testing.T) {
 				InputReader: in_r,
 			}
 
-			go in_w.Write([]byte(tc.input))
+			errors := make(chan error, 1)
+			go func() {
+				_, err := in_w.Write([]byte(tc.input))
+				errors <- err
+			}()
 
 			result, err := ui.Ask(tc.query)
 			if err != nil {
 				t.Fatalf("err: %s", err)
+			}
+
+			err = <-errors
+			if err != nil {
+				t.Fatalf("err: %v", err)
 			}
 
 			if result != tc.expectedResult {

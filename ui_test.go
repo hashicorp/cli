@@ -35,11 +35,20 @@ func TestBasicUi_Ask(t *testing.T) {
 				Writer: writer,
 			}
 
-			go in_w.Write([]byte(tc.input))
+			errors := make(chan error, 1)
+			go func() {
+				_, err := in_w.Write([]byte(tc.input))
+				errors <- err
+			}()
 
 			result, err := ui.Ask(tc.query)
 			if err != nil {
 				t.Fatalf("err: %s", err)
+			}
+
+			err = <-errors
+			if err != nil {
+				t.Fatalf("err: %v", err)
 			}
 
 			if writer.String() != tc.expectedQuery {
@@ -64,11 +73,20 @@ func TestBasicUi_AskSecret(t *testing.T) {
 		Writer: writer,
 	}
 
-	go in_w.Write([]byte("foo bar\nbaz\n"))
+	errors := make(chan error, 1)
+	go func() {
+		_, err := in_w.Write([]byte("foo bar\nbaz\n"))
+		errors <- err
+	}()
 
 	result, err := ui.AskSecret("Name?")
 	if err != nil {
 		t.Fatalf("err: %s", err)
+	}
+
+	err = <-errors
+	if err != nil {
+		t.Fatalf("err: %v", err)
 	}
 
 	if writer.String() != "Name? " {
