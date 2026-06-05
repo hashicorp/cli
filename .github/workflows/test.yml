@@ -4,26 +4,26 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.23]
+        go-version: ["oldstable", "stable"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Install Go
-      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-      with:
-        go-version: ${{ matrix.go-version }}
-    - name: Checkout code
-      uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
-    - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@08e2f20817b15149a52b5b3ebe7de50aff2ba8c5
-    - name: Check that WASM builds
-      run: GOOS=js GOARCH=wasm go build -o test.wasm .
-    - name: Test
-      run: go test -v -coverprofile=coverage.out ./...
-    - name: Upload coverage report 
-      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
-      with:
-        path: coverage.out
-        name: coverage-report
-    - name: Display coverage report
-      run: go tool cover -func=coverage.out
+      - name: Install Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # v2.4.0
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+      - name: Check that WASM builds
+        run: GOOS=js GOARCH=wasm go build -o test.wasm .
+      - name: Test
+        run: go test -v -coverprofile=coverage.out ./...
+      - name: Upload coverage report
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          path: coverage.out
+          name: coverage-report
+      - name: Display coverage report
+        run: go tool cover -func=coverage.out
