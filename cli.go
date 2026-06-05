@@ -213,9 +213,9 @@ func (c *CLI) Run() (int, error) {
 
 		// If both install and uninstall flags are specified, then error
 		if c.isAutocompleteInstall && c.isAutocompleteUninstall {
-			return 1, fmt.Errorf(
+			return 1, fmt.Errorf( //nolint:staticcheck
 				"Either the autocomplete install or uninstall flag may " +
-					"be specified, but not both.")
+					"be specified, but not both")
 		}
 
 		// If the install flag is specified, perform the install or uninstall
@@ -354,7 +354,7 @@ func (c *CLI) init() {
 	if c.commandNested {
 		var walkFn radix.WalkFn
 		toInsert := make(map[string]struct{})
-		walkFn = func(k string, raw interface{}) bool {
+		walkFn = func(k string, raw any) bool {
 			idx := strings.LastIndex(k, " ")
 			if idx == -1 {
 				// If there is no space, just ignore top level commands
@@ -448,7 +448,7 @@ func (c *CLI) initAutocomplete() {
 // The prefix "" (empty string) can be used for the root command.
 func (c *CLI) initAutocompleteSub(prefix string) complete.Command {
 	var cmd complete.Command
-	walkFn := func(k string, raw interface{}) bool {
+	walkFn := func(k string, raw any) bool {
 		// Ignore the empty key which can be present for default commands.
 		if k == "" {
 			return false
@@ -531,14 +531,14 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 	}
 
 	// Template data
-	data := map[string]interface{}{
+	data := map[string]any{
 		"Name":           c.Name,
 		"SubcommandName": c.Subcommand(),
 		"Help":           command.Help(),
 	}
 
 	// Build subcommand list if we have it
-	var subcommandsTpl []map[string]interface{}
+	var subcommandsTpl []map[string]any
 	if c.commandNested {
 		// Get the matching keys
 		subcommands := c.helpCommands(c.Subcommand())
@@ -559,19 +559,19 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 		}
 
 		// Go through and create their structures
-		subcommandsTpl = make([]map[string]interface{}, 0, len(subcommands))
+		subcommandsTpl = make([]map[string]any, 0, len(subcommands))
 		for _, k := range keys {
 			// Get the command
 			raw, ok := subcommands[k]
 			if !ok {
 				//TODO: this needs to be addressed in future: right now we are suppressing the error in order to avoid linter issues and at the same time test cases pass easily.
-				_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
-					"Error getting subcommand %q", k)))
+				_, _ = c.ErrorWriter.Write(fmt.Appendf(nil,
+					"Error getting subcommand %q", k))
 			}
 			sub, err := raw()
 			if err != nil {
-				_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
-					"Error instantiating %q: %s", k, err)))
+				_, _ = c.ErrorWriter.Write(fmt.Appendf(nil,
+					"Error instantiating %q: %s", k, err))
 			}
 
 			// Find the last space and make sure we only include that last part
@@ -580,7 +580,7 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 				name = name[idx+1:]
 			}
 
-			subcommandsTpl = append(subcommandsTpl, map[string]interface{}{
+			subcommandsTpl = append(subcommandsTpl, map[string]any{
 				"Name":        name,
 				"NameAligned": name + strings.Repeat(" ", longest-len(k)),
 				"Help":        sub.Help(),
@@ -597,8 +597,8 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 	}
 
 	// An error, just output...
-	_, _ = c.ErrorWriter.Write([]byte(fmt.Sprintf(
-		"Internal error rendering help: %s", err)))
+	_, _ = c.ErrorWriter.Write(fmt.Appendf(nil,
+		"Internal error rendering help: %s", err))
 }
 
 // helpCommands returns the subcommands for the HelpFunc argument.
@@ -611,7 +611,7 @@ func (c *CLI) helpCommands(prefix string) map[string]CommandFactory {
 
 	// Get all the subkeys of this command
 	var keys []string
-	c.commandTree.WalkPrefix(prefix, func(k string, raw interface{}) bool {
+	c.commandTree.WalkPrefix(prefix, func(k string, raw any) bool {
 		// Ignore any sub-sub keys, i.e. "foo bar baz" when we want "foo bar"
 		if !strings.Contains(k[len(prefix):], " ") {
 			keys = append(keys, k)

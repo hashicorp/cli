@@ -20,9 +20,9 @@ type HelpFunc func(map[string]CommandFactory) string
 func BasicHelpFunc(app string) HelpFunc {
 	return func(commands map[string]CommandFactory) string {
 		var buf bytes.Buffer
-		buf.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&buf,
 			"Usage: %s [--version] [--help] <command> [<args>]\n\n",
-			app))
+			app)
 		buf.WriteString("Available commands are:\n")
 
 		// Get the list of keys so we can sort them, and also get the maximum
@@ -54,7 +54,7 @@ func BasicHelpFunc(app string) HelpFunc {
 			}
 
 			key = fmt.Sprintf("%s%s", key, strings.Repeat(" ", maxKeyLen-len(key)))
-			buf.WriteString(fmt.Sprintf("    %s    %s\n", key, command.Synopsis()))
+			fmt.Fprintf(&buf, "    %s    %s\n", key, command.Synopsis())
 		}
 
 		return buf.String()

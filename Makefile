@@ -1,17 +1,17 @@
-TEST?=./...
+default: lint test
 
-default: test
+.PHONY: deps
+deps:
+	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@c0d3ddc9cf3faa61a4e378e879ece580256d76e5 # v2.12.2
 
-# test runs the test suite and vets the code
+.PHONY: lint
+lint:
+	@echo "==> Running linters..."
+	@golangci-lint run
+	@echo "==> Done"
+
+.PHONY: test
 test:
-	go list $(TEST) | xargs -n1 go test -timeout=60s -parallel=10 $(TESTARGS)
-
-# testrace runs the race checker
-testrace:
-	go list $(TEST) | xargs -n1 go test -race $(TESTARGS)
-
-# updatedeps installs all the dependencies to run and build
-updatedeps:
-	go mod download
-
-.PHONY: test testrace updatedeps
+	@echo "==> Running tests..."	@echo "==> Linting source code..."
+	@go test -v -race -timeout=60s -parallel=10 ./...
+	@echo "==> Done"

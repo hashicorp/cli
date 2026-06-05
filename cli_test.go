@@ -1252,12 +1252,12 @@ func TestCLIAutocomplete_root(t *testing.T) {
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
-			defer r.Close() // Only defer reader since writer is closed below
+			defer func() { _ = r.Close() }() // Only defer reader since writer is closed below
 			os.Stdout = w
 
 			// Run
 			exitCode, err := cli.Run()
-			w.Close()
+			_ = w.Close()
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
@@ -1332,12 +1332,12 @@ func TestCLIAutocomplete_rootGlobalFlags(t *testing.T) {
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
-			defer r.Close() // Only defer reader since writer is closed below
+			defer func() { _ = r.Close() }() // Only defer reader since writer is closed below
 			os.Stdout = w
 
 			// Run
 			exitCode, err := cli.Run()
-			w.Close()
+			_ = w.Close()
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
@@ -1414,12 +1414,12 @@ func TestCLIAutocomplete_rootDisableDefaultFlags(t *testing.T) {
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
-			defer r.Close() // Only defer reader since writer is closed below
+			defer func() { _ = r.Close() }() // Only defer reader since writer is closed below
 			os.Stdout = w
 
 			// Run
 			exitCode, err := cli.Run()
-			w.Close()
+			_ = w.Close()
 			if err != nil {
 				t.Fatalf("err: %s", err)
 			}
@@ -1564,7 +1564,9 @@ func TestCLISubcommand_nested(t *testing.T) {
 // pressed in a shell to autocomplete a command.
 func testAutocomplete(t *testing.T, input string) func() {
 	// This env var is used to trigger autocomplete
-	os.Setenv(envComplete, input)
+	if err := os.Setenv(envComplete, input); err != nil {
+		t.Fatalf("err: %s", err)
+	}
 
 	// Change stdout/stderr since the autocompleter writes directly to them.
 	oldStdout := os.Stdout
@@ -1580,15 +1582,17 @@ func testAutocomplete(t *testing.T, input string) func() {
 
 	return func() {
 		// Reset our env
-		os.Unsetenv(envComplete)
+		if err := os.Unsetenv(envComplete); err != nil {
+			t.Fatalf("err: %s", err)
+		}
 
 		// Reset stdout, stderr
 		os.Stdout = oldStdout
 		os.Stderr = oldStderr
 
 		// Close our pipe
-		r.Close()
-		w.Close()
+		_ = r.Close()
+		_ = w.Close()
 	}
 }
 

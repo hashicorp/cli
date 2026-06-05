@@ -26,7 +26,7 @@ func NewMockUi() *MockUi {
 // there is no write then you will get a nil panic. Please use the
 // NewMockUi() constructor function instead. You can fix your code with
 //
-//  sed -i -e 's/new(cli.MockUi)/cli.NewMockUi()/g' *_test.go
+//	sed -i -e 's/new(cli.MockUi)/cli.NewMockUi()/g' *_test.go
 type MockUi struct {
 	InputReader  io.Reader
 	ErrorWriter  *syncBuffer
@@ -39,7 +39,7 @@ func (u *MockUi) Ask(query string) (string, error) {
 	u.once.Do(u.init)
 
 	var result string
-	fmt.Fprint(u.OutputWriter, query)
+	_, _ = fmt.Fprint(u.OutputWriter, query)
 	r := bufio.NewReader(u.InputReader)
 	line, err := r.ReadString('\n')
 	if err != nil {
@@ -57,8 +57,8 @@ func (u *MockUi) AskSecret(query string) (string, error) {
 func (u *MockUi) Error(message string) {
 	u.once.Do(u.init)
 
-	fmt.Fprint(u.ErrorWriter, message)
-	fmt.Fprint(u.ErrorWriter, "\n")
+	_, _ = fmt.Fprint(u.ErrorWriter, message)
+	_, _ = fmt.Fprint(u.ErrorWriter, "\n")
 }
 
 func (u *MockUi) Info(message string) {
@@ -68,15 +68,15 @@ func (u *MockUi) Info(message string) {
 func (u *MockUi) Output(message string) {
 	u.once.Do(u.init)
 
-	fmt.Fprint(u.OutputWriter, message)
-	fmt.Fprint(u.OutputWriter, "\n")
+	_, _ = fmt.Fprint(u.OutputWriter, message)
+	_, _ = fmt.Fprint(u.OutputWriter, "\n")
 }
 
 func (u *MockUi) Warn(message string) {
 	u.once.Do(u.init)
 
-	fmt.Fprint(u.ErrorWriter, message)
-	fmt.Fprint(u.ErrorWriter, "\n")
+	_, _ = fmt.Fprint(u.ErrorWriter, message)
+	_, _ = fmt.Fprint(u.ErrorWriter, "\n")
 }
 
 func (u *MockUi) init() {

@@ -25,8 +25,8 @@ func TestMockUi_Ask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			in_r, in_w := io.Pipe()
-			defer in_r.Close()
-			defer in_w.Close()
+			defer func() { _ = in_r.Close() }()
+			defer func() { _ = in_w.Close() }()
 
 			ui := &MockUi{
 				InputReader: in_r,

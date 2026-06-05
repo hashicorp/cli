@@ -60,8 +60,8 @@ func (u *BasicUi) Error(message string) {
 		w = u.ErrorWriter
 	}
 
-	fmt.Fprint(w, message)
-	fmt.Fprint(w, "\n")
+	_, _ = fmt.Fprint(w, message)
+	_, _ = fmt.Fprint(w, "\n")
 }
 
 func (u *BasicUi) Info(message string) {
@@ -69,8 +69,8 @@ func (u *BasicUi) Info(message string) {
 }
 
 func (u *BasicUi) Output(message string) {
-	fmt.Fprint(u.Writer, message)
-	fmt.Fprint(u.Writer, "\n")
+	_, _ = fmt.Fprint(u.Writer, message)
+	_, _ = fmt.Fprint(u.Writer, "\n")
 }
 
 func (u *BasicUi) Warn(message string) {

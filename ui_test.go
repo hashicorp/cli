@@ -26,8 +26,8 @@ func TestBasicUi_Ask(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			in_r, in_w := io.Pipe()
-			defer in_r.Close()
-			defer in_w.Close()
+			defer func() { _ = in_r.Close() }()
+			defer func() { _ = in_w.Close() }()
 
 			writer := new(bytes.Buffer)
 			ui := &BasicUi{
@@ -64,8 +64,8 @@ func TestBasicUi_Ask(t *testing.T) {
 
 func TestBasicUi_AskSecret(t *testing.T) {
 	in_r, in_w := io.Pipe()
-	defer in_r.Close()
-	defer in_w.Close()
+	defer func() { _ = in_r.Close() }()
+	defer func() { _ = in_w.Close() }()
 
 	writer := new(bytes.Buffer)
 	ui := &BasicUi{
