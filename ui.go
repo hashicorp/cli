@@ -1,7 +1,6 @@
 // Copyright IBM Corp. 2013, 2025
 // SPDX-License-Identifier: MPL-2.0
 //go:build !js
-// +build !js
 
 package cli
 
@@ -56,7 +55,7 @@ func (u *BasicUi) ask(query string, secret bool) (string, error) {
 	case <-sigCh:
 		// Print a newline so that any further output starts properly
 		// on a new line.
-		fmt.Fprintln(u.Writer)
+		_, _ = fmt.Fprintln(u.Writer)
 
 		return "", errors.New("interrupted")
 	}
