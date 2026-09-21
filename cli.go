@@ -13,7 +13,6 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/armon/go-radix"
 	"github.com/posener/complete"
 )
@@ -524,7 +523,7 @@ func (c *CLI) commandHelp(out io.Writer, command Command) {
 	}
 
 	// Parse it
-	t, err := template.New("root").Funcs(sprig.TxtFuncMap()).Parse(tpl)
+	t, err := template.New("root").Parse(tpl)
 	if err != nil {
 		t = template.Must(template.New("root").Parse(fmt.Sprintf(
 			"Internal error! Failed to parse command help template: %s\n", err)))
